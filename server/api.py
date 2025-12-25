@@ -76,9 +76,9 @@ def verify_wallet_signature(wallet_address: str, signature: str, message: str) -
     """Verify wallet signature"""
     verifier = SignatureVerifier()
     return verifier.verify_signature(
-        wallet_address=wallet_address,
         message=message,
-        signature=signature
+        signature=signature,
+        wallet_address=wallet_address
     )
 
 def get_role_manager():
