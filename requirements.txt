@@ -1,0 +1,37 @@
+# Web3 Accounting & Audit System - Python Dependencies
+
+# Core Framework
+fastapi==0.109.0
+uvicorn[standard]==0.27.0
+pydantic==2.5.3
+pydantic-settings==2.1.0
+
+# Blockchain & Crypto
+eth-account==0.10.0
+web3==6.15.0
+eth-utils==2.3.1
+eth-hash==0.6.0
+
+# Data Handling
+python-multipart==0.0.6
+python-jose[cryptography]==3.3.0
+passlib[bcrypt]==1.7.4
+
+# Storage & Database (Optional)
+aiosqlite==0.19.0
+
+# Utilities
+python-dotenv==1.0.0
+pyyaml==6.0.1
+
+# Development & Testing
+pytest==7.4.4
+pytest-asyncio==0.23.3
+httpx==0.26.0
+black==24.1.1
+flake8==7.0.0
+mypy==1.8.0
+
+# Documentation
+mkdocs==1.5.3
+mkdocs-material==9.5.3
