@@ -128,6 +128,11 @@ async def verify_wallet(auth: WalletAuth):
         role_manager = get_role_manager()
         user_role = role_manager.get_user_role(auth.wallet_address)
 
+        # Assign default role if user has no role
+        if user_role is None:
+            role_manager.assign_role(auth.wallet_address, "Data Entry")
+            user_role = "Data Entry"
+
         return {
             "success": True,
             "wallet_address": auth.wallet_address,
