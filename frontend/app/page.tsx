@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { ethers } from 'ethers';
 import axios from 'axios';
+import Link from 'next/link';
 
 // API Base URL
 const API_URL = 'http://localhost:8000/api';
@@ -56,23 +57,34 @@ export default function Home() {
       const signature = await signer.signMessage(authMessage);
 
       // Verify signature with backend
-      const response = await axios.post(`${API_URL}/auth/verify`, {
-        wallet_address: address,
-        signature: signature,
-        message: authMessage
-      });
+      try {
+        const response = await axios.post(`${API_URL}/auth/verify`, {
+          wallet_address: address,
+          signature: signature,
+          message: authMessage
+        });
 
-      if (response.data.success) {
+        if (response.data.success) {
+          setWallet({
+            address: address,
+            role: response.data.role,
+            authenticated: true
+          });
+          setMessage(`✅ Connected successfully! Role: ${response.data.role || 'None assigned'}`);
+        }
+      } catch (apiError: any) {
+        // If backend is not available, connect wallet anyway (offline mode)
+        console.warn('Backend not available, using offline mode:', apiError.message);
         setWallet({
           address: address,
-          role: response.data.role,
+          role: 'Offline Mode',
           authenticated: true
         });
-        setMessage(`✅ Connected successfully! Role: ${response.data.role || 'None assigned'}`);
-
-        // Load blockchain info
-        loadBlockchainInfo();
+        setMessage(`✅ Connected in offline mode! Backend server not running at ${API_URL}`);
       }
+
+      // Load blockchain info
+      loadBlockchainInfo();
     } catch (error: any) {
       console.error('Connection error:', error);
       setMessage(`❌ Connection failed: ${error.message}`);
@@ -252,15 +264,15 @@ export default function Home() {
                 Quick Actions
               </h3>
               <div className="space-y-2">
-                <button className="w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors">
+                <Link href="/create-transaction" className="block w-full bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700 transition-colors text-center">
                   Create Transaction
-                </button>
-                <button className="w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors">
+                </Link>
+                <Link href="/transactions" className="block w-full bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition-colors text-center">
                   View Transactions
-                </button>
-                <button className="w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors">
+                </Link>
+                <Link href="/audit" className="block w-full bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 transition-colors text-center">
                   Audit Trail
-                </button>
+                </Link>
               </div>
             </div>
 
@@ -293,37 +305,120 @@ export default function Home() {
           </div>
         )}
 
+        {/* Role Selection Section */}
+        {wallet.authenticated && (
+          <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">👔 اختيار لوحة التحكم حسب الدور</h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              <Link href="/dashboard/ceo" className="p-4 bg-indigo-50 rounded-lg hover:bg-indigo-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">👔</div>
+                <div className="font-semibold text-indigo-800 text-sm">الرئيس التنفيذي</div>
+                <div className="text-xs text-gray-500">CEO</div>
+              </Link>
+              <Link href="/dashboard/cfo" className="p-4 bg-teal-50 rounded-lg hover:bg-teal-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">💰</div>
+                <div className="font-semibold text-teal-800 text-sm">المدير المالي</div>
+                <div className="text-xs text-gray-500">CFO</div>
+              </Link>
+              <Link href="/dashboard/hr-manager" className="p-4 bg-green-50 rounded-lg hover:bg-green-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">👥</div>
+                <div className="font-semibold text-green-800 text-sm">مدير الموارد البشرية</div>
+                <div className="text-xs text-gray-500">HR Manager</div>
+              </Link>
+              <Link href="/dashboard/it-manager" className="p-4 bg-slate-50 rounded-lg hover:bg-slate-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">💻</div>
+                <div className="font-semibold text-slate-800 text-sm">مدير تقنية المعلومات</div>
+                <div className="text-xs text-gray-500">IT Manager</div>
+              </Link>
+              <Link href="/dashboard/procurement" className="p-4 bg-orange-50 rounded-lg hover:bg-orange-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">📦</div>
+                <div className="font-semibold text-orange-800 text-sm">مدير المشتريات</div>
+                <div className="text-xs text-gray-500">Procurement</div>
+              </Link>
+              <Link href="/dashboard/sales-manager" className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">💼</div>
+                <div className="font-semibold text-blue-800 text-sm">مدير المبيعات</div>
+                <div className="text-xs text-gray-500">Sales Manager</div>
+              </Link>
+              <Link href="/dashboard/warehouse" className="p-4 bg-amber-50 rounded-lg hover:bg-amber-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">🏭</div>
+                <div className="font-semibold text-amber-800 text-sm">مدير المستودع</div>
+                <div className="text-xs text-gray-500">Warehouse</div>
+              </Link>
+              <Link href="/admin" className="p-4 bg-red-50 rounded-lg hover:bg-red-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">⚙️</div>
+                <div className="font-semibold text-red-800 text-sm">إدارة النظام</div>
+                <div className="text-xs text-gray-500">Admin</div>
+              </Link>
+            </div>
+          </div>
+        )}
+
         {/* Features Section */}
         <div className="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          <Link href="/accounting" className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
             <div className="text-4xl mb-3">📊</div>
             <h4 className="font-bold text-gray-800 mb-2">Accounting</h4>
             <p className="text-sm text-gray-600">
               Blockchain-based journal entries with immutable records
             </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          </Link>
+          <Link href="/hr" className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
             <div className="text-4xl mb-3">👥</div>
             <h4 className="font-bold text-gray-800 mb-2">HR Management</h4>
             <p className="text-sm text-gray-600">
               Employee records and payroll on blockchain
             </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          </Link>
+          <Link href="/sales" className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
             <div className="text-4xl mb-3">💼</div>
             <h4 className="font-bold text-gray-800 mb-2">Sales</h4>
             <p className="text-sm text-gray-600">
               Invoice and order management with smart contracts
             </p>
-          </div>
-          <div className="bg-white rounded-lg shadow-md p-6 text-center">
+          </Link>
+          <Link href="/audit" className="bg-white rounded-lg shadow-md p-6 text-center hover:shadow-xl hover:scale-105 transition-all cursor-pointer">
             <div className="text-4xl mb-3">🔍</div>
             <h4 className="font-bold text-gray-800 mb-2">Audit</h4>
             <p className="text-sm text-gray-600">
               Complete audit trail with anomaly detection
             </p>
-          </div>
+          </Link>
         </div>
+
+        {/* AI Tools Section */}
+        {wallet.authenticated && (
+          <div className="mt-8 bg-white rounded-lg shadow-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">🤖 أدوات الذكاء الاصطناعي</h3>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+              <Link href="/ai-assistant" className="p-4 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-lg hover:from-purple-100 hover:to-indigo-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">💬</div>
+                <div className="font-semibold text-purple-800 text-sm">المساعد الذكي</div>
+                <div className="text-xs text-gray-500">AI Assistant</div>
+              </Link>
+              <Link href="/fraud-detection" className="p-4 bg-gradient-to-br from-red-50 to-orange-50 rounded-lg hover:from-red-100 hover:to-orange-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">🛡️</div>
+                <div className="font-semibold text-red-800 text-sm">كشف الاحتيال</div>
+                <div className="text-xs text-gray-500">Fraud Detection</div>
+              </Link>
+              <Link href="/invoice-scanner" className="p-4 bg-gradient-to-br from-green-50 to-teal-50 rounded-lg hover:from-green-100 hover:to-teal-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">📄</div>
+                <div className="font-semibold text-green-800 text-sm">ماسح الفواتير</div>
+                <div className="text-xs text-gray-500">Invoice Scanner</div>
+              </Link>
+              <Link href="/ai-analytics" className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-lg hover:from-blue-100 hover:to-cyan-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">📈</div>
+                <div className="font-semibold text-blue-800 text-sm">التحليلات الذكية</div>
+                <div className="text-xs text-gray-500">AI Analytics</div>
+              </Link>
+              <Link href="/auto-classification" className="p-4 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-lg hover:from-emerald-100 hover:to-teal-100 text-center hover:shadow-lg transition-all">
+                <div className="text-3xl mb-2">🏷️</div>
+                <div className="font-semibold text-emerald-800 text-sm">تصنيف تلقائي</div>
+                <div className="text-xs text-gray-500">Auto Classification</div>
+              </Link>
+            </div>
+          </div>
+        )}
       </main>
 
       {/* Footer */}
